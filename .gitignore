@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+*.pyo
+*.pyd
+
+# Entornos virtuales
+.venv/
+env/
+venv/
+airflow_env/
+
+# Archivos de configuración y variables
+.env
+*.log
+
+# Airflow
+airflow.db
+airflow.cfg
+airflow-webserver.pid
+logs/
+
+# VSCode
+.vscode/
+
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+.airflow.cfg

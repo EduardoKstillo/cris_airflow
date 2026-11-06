@@ -1,0 +1,236 @@
+{
+  "version": "3.0",
+  "description": "Mapeo Dinámico: Golden Record PostgreSQL -> DSpace-CRIS 7",
+  "entities": {
+    "organizations": {
+      "dspace_entity_type": "OrgUnit",
+      "table_name": "organizations",
+      "fields": {
+        "name": {"dspace_field": "dc.title", "type": "text", "language": "es", "required": true},
+        "organization_type": {
+          "dspace_field": "perucris.type.orgunit", 
+          "type": "vocabulary", 
+          "required": true,
+          "translation": {
+            "Department": "https://purl.org/pe-repo/concytec/tipoSubunidad/departamentoAcademico",
+            "Faculty": "https://purl.org/pe-repo/concytec/tipoSubunidad/facultad",
+            "Institute": "https://purl.org/pe-repo/concytec/tipoSubunidad/institutoInvestigacion"
+          }
+        },
+        "acronym": {"dspace_field": "oairecerif.acronym", "type": "text", "language": "es"},
+        "dependency_type": {"dspace_field": "dc.type", "type": "text", "required": true},
+        "description": {"dspace_field": "dc.description.abstract", "type": "text", "language": "es"},
+        "ruc": {"dspace_field": "organization.identifier.ruc", "type": "text"},
+        "scopus_affid": {"dspace_field": "organization.identifier.scopusaffid", "type": "text"},
+        "isni": {"dspace_field": "organization.identifier.isni", "type": "text"},
+        "website_url": {"dspace_field": "oairecerif.identifier.url", "type": "text"},
+        "email": {"dspace_field": "orgunit.email", "type": "text"},
+        "country": {"dspace_field": "organization.address.addressCountry", "type": "text"},
+        "address": {"dspace_field": "perucris.address.streetAddress", "type": "text"},
+        "ubigeo": {"dspace_field": "perucris.ubigeo", "type": "text"},
+        "ocde_classification": {"dspace_field": "perucris.subject.ocde", "type": "text"},
+        "dspace_handle": {"dspace_field": "dc.identifier.uri", "type": "uri"}
+      },
+      "authorities": {
+        "parent_org": {
+          "dspace_field": "organization.parentOrganization",
+          "sql_query": "SELECT name as value, dspace_uuid as authority FROM public.organizations WHERE id = (SELECT parent_organization_id FROM public.organizations WHERE id = :entity_id) AND dspace_uuid IS NOT NULL",
+          "required": false
+        }
+      }
+    },
+    "persons": {
+      "dspace_entity_type": "Person",
+      "table_name": "persons",
+      "fields": {
+        "full_name": {"dspace_field": "dc.title", "type": "text", "required": true},
+        "dni": {"dspace_field": "perucris.identifier.dni", "type": "text"},
+        "orcid": {"dspace_field": "person.identifier.orcid", "type": "text"},
+        "scopus_author_id": {"dspace_field": "person.identifier.scopus-author-id", "type": "text"},
+        "researcher_id": {"dspace_field": "person.identifier.rid", "type": "text"},
+        "correo_institucional": {"dspace_field": "person.email", "type": "text"},
+        "link_cti_vitae": {"dspace_field": "oairecerif.identifier.url", "type": "text"},
+        "gender": {
+          "dspace_field": "oairecerif.person.gender",
+          "type": "vocabulary",
+          "translation": {
+            "M": "m", "F": "f", "Masculino": "m", "Femenino": "f", "m": "m", "f": "f"
+          }
+        },
+        "dspace_handle": {"dspace_field": "dc.identifier.uri", "type": "uri"}
+      },
+      "authorities": {
+        "affiliations": {
+          "dspace_field": "oairecerif.person.affiliation",
+          "sql_query": "SELECT o.name as value, o.dspace_uuid as authority FROM public.person_organization_affiliations poa JOIN public.organizations o ON poa.organization_id = o.id WHERE poa.person_id = :entity_id AND o.dspace_uuid IS NOT NULL",
+          "required": false
+        },
+        "affiliation_name": {
+          "dspace_field": "person.affiliation.name",
+          "sql_query": "SELECT o.name as value, o.dspace_uuid as authority FROM public.person_organization_affiliations poa JOIN public.organizations o ON poa.organization_id = o.id WHERE poa.person_id = :entity_id AND o.dspace_uuid IS NOT NULL AND o.id NOT IN (SELECT parent_organization_id FROM public.organizations WHERE parent_organization_id IS NOT NULL) LIMIT 1",
+          "required": false
+        }
+      }
+    },
+    "projects": {
+      "dspace_entity_type": "Project",
+      "table_name": "projects",
+      "fields": {
+        "title": {"dspace_field": "dc.title", "type": "text", "language": "es", "required": true},
+        "project_code": {"dspace_field": "oairecerif.internalid", "type": "text", "required": true},
+        "acronym": {"dspace_field": "oairecerif.acronym", "type": "text"},
+        "abstract": {"dspace_field": "dc.description.abstract", "type": "text", "language": "es"},
+        "planned_start_date": {"dspace_field": "oairecerif.project.startDate", "type": "text"},
+        "estimated_end_date": {"dspace_field": "oairecerif.project.endDate", "type": "text"},
+        "url": {"dspace_field": "oairecerif.identifier.url", "type": "text"},
+        "keywords": {"dspace_field": "dc.subject", "type": "replace_separator", "language": "es"},
+        "ocde_activity_type": {"dspace_field": "perucris.project.typeOcde", "type": "replace_separator"},
+        "ocde_classification": {"dspace_field": "perucris.subject.ocde", "type": "replace_separator"},
+        "oamandate": {"dspace_field": "oairecerif.oamandate", "type": "fixed", "value": "false"},
+        "dspace_handle": {"dspace_field": "dc.identifier.uri", "type": "uri"},
+        "status_code": {
+          "dspace_field": "oairecerif.project.status", 
+          "type": "vocabulary",
+          "required": true,
+          "translation": {
+            "R": "https://purl.org/pe-repo/concytec/estadoProyecto#activo",
+            "V": "https://purl.org/pe-repo/concytec/estadoProyecto#activo",
+            "T": "https://purl.org/pe-repo/concytec/estadoProyecto#activo",
+            "E": "https://purl.org/pe-repo/concytec/estadoProyecto#activo",
+            "O": "https://purl.org/pe-repo/concytec/estadoProyecto#activo",
+            "D": "https://purl.org/pe-repo/concytec/estadoProyecto#activo",
+            "X": "https://purl.org/pe-repo/concytec/estadoProyecto#suspendido",
+            "A": "https://purl.org/pe-repo/concytec/estadoProyecto#suspendido",
+            "I": "https://purl.org/pe-repo/concytec/estadoProyecto#suspendido",
+            "C": "https://purl.org/pe-repo/concytec/estadoProyecto#concluido"
+          }
+        }
+      },
+      "authorities": {
+        "investigators": {
+          "dspace_field": "crispj.investigator",
+          "sql_query": "SELECT per.full_name as value, per.dspace_uuid as authority FROM public.project_researchers pr JOIN public.persons per ON pr.researcher_id = per.id WHERE pr.project_id = :entity_id AND pr.role = 'Investigador Principal' AND per.dspace_uuid IS NOT NULL ORDER BY pr.order_in_project",
+          "required": true
+        },
+        "contractorper": {
+          "dspace_field": "crispj.contractorper",
+          "sql_query": "SELECT per.full_name as value, per.dspace_uuid as authority FROM public.project_researchers pr JOIN public.persons per ON pr.researcher_id = per.id WHERE pr.project_id = :entity_id AND pr.role = 'Investigador Principal' AND per.dspace_uuid IS NOT NULL ORDER BY pr.order_in_project",
+          "required": false
+        },
+        "coinvestigators": {
+          "dspace_field": "crispj.coinvestigators",
+          "sql_query": "SELECT per.full_name as value, per.dspace_uuid as authority FROM public.project_researchers pr JOIN public.persons per ON pr.researcher_id = per.id WHERE pr.project_id = :entity_id AND pr.role = 'Investigador Principal' ORDER BY pr.order_in_project",
+          "required": false
+        },
+        "coinvestigators_role": {
+          "dspace_field": "crispj.coinvestigators.role",
+          "sql_query": "SELECT 'https://purl.org/pe-repo/ocde/tipoOcupacion#investigadorOInnovadorMiembro' AS value, NULL AS authority FROM public.project_researchers pr JOIN public.persons per ON pr.researcher_id = per.id WHERE pr.project_id = :entity_id AND pr.role <> 'Investigador Principal' ORDER BY pr.order_in_project",
+          "required": false
+        },
+        "funder": {
+          "dspace_field": "oairecerif.funder",
+          "sql_query": "SELECT name as value, dspace_uuid as authority FROM public.organizations WHERE acronym = 'UNSA' OR code = 'UNSA' AND dspace_uuid IS NOT NULL LIMIT 1",
+          "required": false
+        },
+        "fundingProgram": {
+          "dspace_field": "oairecerif.fundingProgram",
+          "sql_query": "SELECT fg.contract_description as value, fg.dspace_uuid as authority FROM public.funding_grants fg JOIN public.projects p ON p.funding_grant_id = fg.id WHERE p.id = :entity_id AND fg.dspace_uuid IS NOT NULL",
+          "required": false
+        }
+      }
+    },
+    "funding_sources": {
+      "dspace_entity_type": "Funding",
+      "table_name": "funding_sources",
+      "fields": {
+        "name": {"dspace_field": "dc.title", "type": "text", "required": true},
+        "abbreviation": {"dspace_field": "oairecerif.acronym", "type": "text"},
+        "description": {"dspace_field": "dc.description", "type": "text"},
+        "dspace_handle": {"dspace_field": "dc.identifier.uri", "type": "uri"},
+        "type": {
+          "dspace_field": "dc.type", 
+          "type": "conditional_vocabulary", 
+          "based_on": "abbreviation",
+          "required": true,
+          "translation": {
+            "18-MINERO": "https://www.openaire.eu/cerif-profile/vocab/OpenAIRE_Funding_Types#FundingProgramme",
+            "13-DyT": "https://www.openaire.eu/cerif-profile/vocab/OpenAIRE_Funding_Types#Gift",
+            "00-RO": "https://www.openaire.eu/cerif-profile/vocab/OpenAIRE_Funding_Types#InternalFunding"
+          }
+        }
+      },
+      "authorities": {
+        "funder": {
+          "dspace_field": "oairecerif.funder",
+          "sql_query": "SELECT o.name as value, o.dspace_uuid as authority FROM public.organizations o JOIN public.funding_sources fs ON fs.organization_id = o.id WHERE fs.id = :entity_id AND o.dspace_uuid IS NOT NULL",
+          "required": true
+        }
+      }
+    },
+    "funding_calls": {
+      "dspace_entity_type": "Funding",
+      "table_name": "funding_calls",
+      "fields": {
+        "call_name": {"dspace_field": "dc.title", "type": "text", "required": true},
+        "call_code": {"dspace_field": "oairecerif.internalid", "type": "text", "required": true},
+        "description": {"dspace_field": "dc.description", "type": "text"},
+        "dspace_handle": {"dspace_field": "dc.identifier.uri", "type": "uri"},
+        "type": {
+          "dspace_field": "dc.type", "type": "vocabulary", "required": true,
+          "translation": {"default": "https://www.openaire.eu/cerif-profile/vocab/OpenAIRE_Funding_Types#Call"}
+        }
+      },
+      "authorities": {
+        "funder": {
+          "dspace_field": "oairecerif.funder",
+          "sql_query": "SELECT o.name as value, o.dspace_uuid as authority FROM public.organizations o JOIN public.funding_calls fc ON fc.organization_id = o.id WHERE fc.id = :entity_id AND o.dspace_uuid IS NOT NULL",
+          "required": true
+        },
+        "fundingParent": {
+          "dspace_field": "oairecerif.fundingParent",
+          "sql_query": "SELECT fs.name as value, fs.dspace_uuid as authority FROM public.funding_sources fs JOIN public.funding_calls fc ON fc.funding_source_id = fs.id WHERE fc.id = :entity_id AND fs.dspace_uuid IS NOT NULL",
+          "required": true
+        }
+      }
+    },
+    "funding_grants": {
+      "dspace_entity_type": "Funding",
+      "table_name": "funding_grants",
+      "fields": {
+        "contract_description": {"dspace_field": "dc.title", "type": "text", "required": true},
+        "contract_number": {"dspace_field": "oairecerif.internalid", "type": "text", "required": true},
+        "amount": {"dspace_field": "oairecerif.amount", "type": "text"},
+        "currency": {
+          "dspace_field": "oairecerif.amount.currency",
+          "type": "vocabulary",
+          "translation": {
+            "S/.": "PEN",
+            "S/": "PEN",
+            "PEN": "PEN",
+            "USD": "USD",
+            "default": "PEN"
+          }
+        },
+        "start_date": {"dspace_field": "oairecerif.funding.startDate", "type": "text"},
+        "end_date": {"dspace_field": "oairecerif.funding.endDate", "type": "text"},
+        "dspace_handle": {"dspace_field": "dc.identifier.uri", "type": "uri"},
+        "type": {
+          "dspace_field": "dc.type", "type": "vocabulary", "required": true,
+          "translation": {"default": "https://www.openaire.eu/cerif-profile/vocab/OpenAIRE_Funding_Types#Grant"}
+        }
+      },
+      "authorities": {
+        "funder": {
+          "dspace_field": "oairecerif.funder",
+          "sql_query": "SELECT o.name as value, o.dspace_uuid as authority FROM public.organizations o JOIN public.funding_grants fg ON fg.organization_id = o.id WHERE fg.id = :entity_id AND o.dspace_uuid IS NOT NULL",
+          "required": true
+        },
+        "fundingParent": {
+          "dspace_field": "oairecerif.fundingParent",
+          "sql_query": "SELECT fc.call_name as value, fc.dspace_uuid as authority FROM public.funding_calls fc JOIN public.funding_grants fg ON fg.funding_call_id = fc.id WHERE fg.id = :entity_id AND fc.dspace_uuid IS NOT NULL",
+          "required": true
+        }
+      }
+    }
+  }
+}
